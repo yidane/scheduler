@@ -9,6 +9,8 @@ import (
 
 	"fmt"
 
+	"errors"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -18,13 +20,26 @@ import (
 )
 
 func init() {
-	mysqluser := strings.TrimSpace(beego.AppConfig.String("mysqluser"))
-	mysqlpass := strings.TrimSpace(beego.AppConfig.String("mysqlpass"))
-	mysqlurls := strings.TrimSpace(beego.AppConfig.String("mysqlurls"))
-	mysqlport := strings.TrimSpace(beego.AppConfig.String("mysqlport"))
-	mysqldb := strings.TrimSpace(beego.AppConfig.String("mysqldb"))
-	if len(mysqldb) == 0 || len(mysqlpass) == 0 || len(mysqlurls) == 0 || len(mysqluser) == 0 || len(mysqlport) == 0 {
-		log.Println("mysql配置不合法")
+	checkConfig := func(config, msg string, err *error) string {
+		if *err != nil {
+			return ""
+		}
+		str := strings.TrimSpace(config)
+		if len(str) == 0 {
+			*err = errors.New(msg)
+			return ""
+		}
+		return str
+	}
+	var err error
+	mysqluser := checkConfig(beego.AppConfig.String("mysqluser"), "数据库访问账户不可为空", &err)
+	mysqlpass := checkConfig(beego.AppConfig.String("mysqlpass"), "数据库访问密码不可为空", &err)
+	mysqlurls := checkConfig(beego.AppConfig.String("mysqlurls"), "数据库访问链接不可为空", &err)
+	mysqlport := checkConfig(beego.AppConfig.String("mysqlport"), "数据库访问端口不可为空", &err)
+	mysqldb := checkConfig(beego.AppConfig.String("mysqldb"), "数据库名称不可为空", &err)
+
+	if err != nil {
+		log.Println("mysql配置不合法:", err)
 		return
 	}
 	port, err := strconv.Atoi(mysqlport)

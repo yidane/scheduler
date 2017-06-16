@@ -4,10 +4,10 @@ import (
 	"errors"
 	"log"
 
-	"github.com/shotdog/quartz"
 	"github.com/yidane/scheduler/common"
 	"github.com/yidane/scheduler/entity"
 	invoke "github.com/yidane/scheduler/invoker"
+	"github.com/yidane/scheduler/quartz"
 
 	"time"
 )
@@ -24,7 +24,6 @@ type JobManager struct {
 }
 
 func NewJobMnager() *JobManager {
-
 	if jm == nil {
 		QZ = quartz.New()
 		QZ.BootStrap()
@@ -40,9 +39,17 @@ func (this *JobManager) PushAllJob() {
 	jobs, err := jobInfo.FindAllJobInfo()
 	common.PanicIf(err)
 	if len(jobs) > 0 {
-
 		for _, job := range jobs {
-			j := &quartz.Job{Id: job.ID, Name: job.Name, Group: job.Group, Expression: job.Cron, Params: job.Param, Active: job.IsActivity, JobFunc: this.InvokeJob, Url: job.Urls}
+			j := &quartz.Job{
+				ID:         job.ID,
+				Name:       job.Name,
+				Group:      job.Group,
+				Expression: job.Cron,
+				Params:     job.Param,
+				Active:     job.IsActivity,
+				JobFunc:    this.InvokeJob,
+				URL:        job.Urls,
+			}
 			err := this.qz.AddJob(j)
 			log.Println("add job error ", err)
 
@@ -66,24 +73,40 @@ func (this *JobManager) InvokeJob(jobId int, targetUrl, params string, nextTime 
 	if err != nil {
 		log.Println("err = ", err)
 	}
-
 }
 
 // add job
 func (this *JobManager) AddJob(jobInfo *entity.JobInfo) error {
-	j := &quartz.Job{Id: jobInfo.ID, Name: jobInfo.Name, Group: jobInfo.Group, Expression: jobInfo.Cron, Params: jobInfo.Param, Active: jobInfo.IsActivity, JobFunc: this.InvokeJob, Url: jobInfo.Urls}
+	j := &quartz.Job{
+		ID:         jobInfo.ID,
+		Name:       jobInfo.Name,
+		Group:      jobInfo.Group,
+		Expression: jobInfo.Cron,
+		Params:     jobInfo.Param,
+		Active:     jobInfo.IsActivity,
+		JobFunc:    this.InvokeJob,
+		URL:        jobInfo.Urls,
+	}
 	return this.qz.AddJob(j)
 }
 
 // modify a job
 func (this *JobManager) ModifyJob(jobInfo *entity.JobInfo) error {
-	j := &quartz.Job{Id: jobInfo.ID, Name: jobInfo.Name, Group: jobInfo.Group, Expression: jobInfo.Cron, Params: jobInfo.Param, Active: jobInfo.IsActivity, JobFunc: this.InvokeJob, Url: jobInfo.Urls}
+	j := &quartz.Job{
+		ID:         jobInfo.ID,
+		Name:       jobInfo.Name,
+		Group:      jobInfo.Group,
+		Expression: jobInfo.Cron,
+		Params:     jobInfo.Param,
+		Active:     jobInfo.IsActivity,
+		JobFunc:    this.InvokeJob,
+		URL:        jobInfo.Urls,
+	}
 	return this.qz.ModifyJob(j)
 }
 
 // delete job
 func (this *JobManager) DeleteJob(jobId int) error {
-
 	return this.qz.RemoveJob(jobId)
 }
 
